@@ -1,6 +1,4 @@
-#!/bin/sh
-'''exec' "/Users/ajeetkumar/Desktop/project /ConsumerAttentionMapping/backend/venv/bin/python3" "$0" "$@"
-' '''
+#!/Users/ajeetkumar/Desktop/project/ConsumerAttentionMapping/backend/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
