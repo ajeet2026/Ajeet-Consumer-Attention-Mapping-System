@@ -1,14 +1,28 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 
 from app.database.database import Base
 
 
 class Shelf(Base):
-
     __tablename__ = "shelves"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    shelf_name = Column(String)
+    name = Column(String, nullable=False)
 
-    category = Column(String)
+    store_id = Column(
+        Integer,
+        ForeignKey("stores.id")
+    )
+
+    store = relationship(
+        "Store",
+        back_populates="shelves"
+    )
+
+    products = relationship(
+        "Product",
+        back_populates="shelf",
+        cascade="all, delete"
+    )
