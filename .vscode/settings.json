@@ -1,3 +1,5 @@
 {
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python.defaultInterpreterPath": "./backend/venv/bin/python",
+    "python.analysis.extraPaths": ["./backend/venv/lib/python3.9/site-packages"]
 }

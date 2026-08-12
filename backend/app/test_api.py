@@ -5,9 +5,11 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import unittest
+import io
 from fastapi.testclient import TestClient
 from app.main import app
 from app.database.database import get_db, SessionLocal, engine, Base
+
 from app.models.user import User
 from app.models.store import Store
 from app.models.shelf import Shelf
@@ -157,6 +159,41 @@ class TestRetailAPI(unittest.TestCase):
 
         # 8. Test Simulated Camera Feed Endpoint (Skipped stream read in synchronous test client to prevent thread block)
         pass
+
+        # 8a. Test Video Upload and Registration
+        dummy_video = io.BytesIO(b"dummy video data")
+        upload_response = self.client.post(
+            "/cameras/upload",
+            files={"file": ("test_video.mp4", dummy_video, "video/mp4")},
+            headers=headers,
+        )
+        self.assertEqual(upload_response.status_code, 200)
+        uploaded_cam_id = upload_response.json()["id"]
+
+        # 8b. Test Analytics API Endpoints
+        live_analytics = self.client.get("/analytics/live", headers=headers)
+        self.assertEqual(live_analytics.status_code, 200)
+        self.assertIn("active_shoppers", live_analytics.json())
+
+        shoppers_list = self.client.get("/analytics/shoppers", headers=headers)
+        self.assertEqual(shoppers_list.status_code, 200)
+
+        dwell_stats = self.client.get("/analytics/dwell", headers=headers)
+        self.assertEqual(dwell_stats.status_code, 200)
+
+        attention_heatmap = self.client.get("/analytics/attention", headers=headers)
+        self.assertEqual(attention_heatmap.status_code, 200)
+
+        zone_stats = self.client.get("/analytics/zones", headers=headers)
+        self.assertEqual(zone_stats.status_code, 200)
+
+        # Cleanup uploaded video camera and file
+        del_upload = self.client.delete(f"/cameras/{uploaded_cam_id}", headers=headers)
+        self.assertEqual(del_upload.status_code, 200)
+        uploaded_path = "/Users/ajeetkumar/Desktop/project/ConsumerAttentionMapping/backend/uploads/test_video.mp4"
+        if os.path.exists(uploaded_path):
+            os.remove(uploaded_path)
+
 
 
 

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { parseJwt } from "../components/ProtectedRoute";
+import HeatmapCanvas from "../components/HeatmapCanvas";
 
 function Shelves() {
   const [shelves, setShelves] = useState([]);
   const [stores, setStores] = useState([]);
+  const [heatmapPoints, setHeatmapPoints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
@@ -19,11 +21,28 @@ function Shelves() {
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
+    let heatmapInterval = null;
+
     if (token) {
       const payload = parseJwt(token);
       setIsAdmin(payload && payload.role === "Admin");
     }
     fetchShelvesAndStores();
+
+    const pollHeatmap = async () => {
+      try {
+        await fetchHeatmap();
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          if (heatmapInterval) clearInterval(heatmapInterval);
+        }
+      }
+    };
+
+    pollHeatmap();
+    // Poll heatmap coordinates every 5 seconds
+    heatmapInterval = setInterval(pollHeatmap, 5000);
+    return () => clearInterval(heatmapInterval);
   }, []);
 
   const fetchShelvesAndStores = async () => {
@@ -40,6 +59,15 @@ function Shelves() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHeatmap = async () => {
+    try {
+      const res = await api.get("/analytics/attention", { headers });
+      setHeatmapPoints(res.data);
+    } catch (err) {
+      console.error("Failed to load heatmap data", err);
     }
   };
 
@@ -103,11 +131,89 @@ function Shelves() {
   }
 
   return (
-    <div className="shelves-container">
+    <div className="shelves-container" style={{ color: "#f8fafc" }}>
       {error && <div className="error-alert">{error}</div>}
 
+      {/* --- VISUAL PLANOGRAM HEATMAP VIEW --- */}
+      <h2 style={{ fontSize: "1.4rem", margin: "10px 0 10px 0", color: "#38bdf8" }}>
+        📊 Store Planogram & Attention Heatmap
+      </h2>
+      <p style={{ color: "#94a3b8", fontSize: "0.85rem", marginBottom: "20px" }}>
+        Gaze interaction density overlay calculated from media tracks and head pose vectors in real-time.
+      </p>
+
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "40px" }}>
+        <div style={{
+          position: "relative",
+          width: "640px",
+          height: "480px",
+          background: "#1e293b",
+          border: "2px solid #334155",
+          borderRadius: "8px",
+          boxShadow: "0 10px 25px rgba(0, 0, 0, 0.4)"
+        }}>
+          {/* Planogram Shelves Layout Background */}
+          <div style={{
+            position: "absolute",
+            top: "60px",
+            left: "40px",
+            width: "200px",
+            height: "220px",
+            border: "2px dashed #0284c7",
+            borderRadius: "6px",
+            background: "rgba(2, 132, 199, 0.05)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
+            <span style={{ fontSize: "1.1rem", fontWeight: "bold", color: "#38bdf8" }}>Shelf A</span>
+            <span style={{ fontSize: "0.75rem", color: "#64748b" }}>Beverages Section</span>
+          </div>
+
+          <div style={{
+            position: "absolute",
+            top: "60px",
+            left: "380px",
+            width: "200px",
+            height: "220px",
+            border: "2px dashed #ea580c",
+            borderRadius: "6px",
+            background: "rgba(234, 88, 12, 0.05)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
+            <span style={{ fontSize: "1.1rem", fontWeight: "bold", color: "#f97316" }}>Shelf B</span>
+            <span style={{ fontSize: "0.75rem", color: "#64748b" }}>Snacks Section</span>
+          </div>
+
+          {/* Checkout Zone */}
+          <div style={{
+            position: "absolute",
+            bottom: "20px",
+            left: "40px",
+            width: "560px",
+            height: "80px",
+            border: "2px dashed #22c55e",
+            borderRadius: "6px",
+            background: "rgba(34, 197, 94, 0.05)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
+            <span style={{ fontSize: "1rem", fontWeight: "bold", color: "#4ade80" }}>🛒 Checkout Counter Area</span>
+          </div>
+
+          {/* Active Heatmap Overlay Canvas */}
+          <HeatmapCanvas points={heatmapPoints} width={640} height={480} />
+        </div>
+      </div>
+
+      {/* --- SHELVES LIST & CRUD TABLE --- */}
       <div className="section-header">
-        <h2>Store Shelves ({shelves.length})</h2>
+        <h2>Shelf Configuration List ({shelves.length})</h2>
         {isAdmin && (
           <button 
             className="btn btn-primary"
