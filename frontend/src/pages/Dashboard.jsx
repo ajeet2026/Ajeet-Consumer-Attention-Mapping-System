@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { generateAdminReport } from "../utils/reportGenerator";
+import ShopperPathVisualizer from "../components/ShopperPathVisualizer";
 
 function Dashboard() {
   const [liveStats, setLiveStats] = useState({
@@ -24,6 +25,11 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [generating, setGenerating] = useState(false);
+  
+  // Path Visualization State
+  const [selectedSessionData, setSelectedSessionData] = useState(null);
+  const [loadingPath, setLoadingPath] = useState(false);
+  const [showPathModal, setShowPathModal] = useState(false);
 
   useEffect(() => {
     let intervalId = null;
@@ -98,8 +104,27 @@ function Dashboard() {
       generateAdminReport({ liveStats, coreStats, recentSessions, dwellStats, zoneStats });
     } catch (err) {
       console.error("Failed to generate report:", err);
+      alert("Error generating report. Please check the console.");
     } finally {
-      setTimeout(() => setGenerating(false), 1200);
+      setGenerating(false);
+    }
+  };
+
+  const handleViewPath = async (sessionId) => {
+    try {
+      setLoadingPath(true);
+      setShowPathModal(true);
+      const token = localStorage.getItem("token");
+      const res = await api.get(`/analytics/sessions/${sessionId}/path`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSelectedSessionData(res.data);
+    } catch (err) {
+      console.error("Failed to fetch path data:", err);
+      alert("Failed to load shopper path.");
+      setShowPathModal(false);
+    } finally {
+      setLoadingPath(false);
     }
   };
 
@@ -259,6 +284,7 @@ function Dashboard() {
                   <th style={{ padding: "10px" }}>Exit Time</th>
                   <th style={{ padding: "10px" }}>Dwell Duration</th>
                   <th style={{ padding: "10px" }}>Status</th>
+                  <th style={{ padding: "10px" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -274,6 +300,25 @@ function Dashboard() {
                       <span className={`badge ${session.exit_time ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: "0.7rem", padding: "2px 6px" }}>
                         {session.exit_time ? "COMPLETED" : "IN PROGRESS"}
                       </span>
+                    </td>
+                    <td style={{ padding: "10px" }}>
+                      <button 
+                        onClick={() => handleViewPath(session.id)}
+                        style={{
+                          background: "rgba(56, 189, 248, 0.1)",
+                          color: "#38bdf8",
+                          border: "1px solid rgba(56, 189, 248, 0.3)",
+                          borderRadius: "4px",
+                          padding: "4px 8px",
+                          fontSize: "0.75rem",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px"
+                        }}
+                      >
+                        🗺️ View Path
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -318,6 +363,42 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* --- PATH VISUALIZER MODAL --- */}
+      {showPathModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(15, 23, 42, 0.85)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 1000, padding: "20px"
+        }}>
+          <div style={{
+            background: "#1e293b", border: "1px solid #334155",
+            borderRadius: "12px", padding: "24px", width: "100%", maxWidth: "900px",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
+            position: "relative"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h2 style={{ margin: 0, color: "#f8fafc", fontSize: "1.2rem" }}>
+                📍 Shopper Path Analysis {selectedSessionData && `(Session #${selectedSessionData.session_id})`}
+              </h2>
+              <button 
+                onClick={() => { setShowPathModal(false); setSelectedSessionData(null); }}
+                style={{ background: "transparent", border: "none", color: "#94a3b8", fontSize: "1.5rem", cursor: "pointer" }}
+              >
+                &times;
+              </button>
+            </div>
+            
+            {loadingPath ? (
+              <div style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>Loading path coordinates...</div>
+            ) : (
+              <ShopperPathVisualizer sessionData={selectedSessionData} width={640} height={480} />
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

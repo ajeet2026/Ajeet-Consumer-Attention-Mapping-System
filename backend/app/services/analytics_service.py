@@ -130,3 +130,44 @@ class AnalyticsService:
             }
             for r in results
         ]
+
+    @staticmethod
+    def get_shopper_path(db: Session, session_id: int):
+        """
+        Returns the path points and zone events for a specific shopper session.
+        """
+        points = (
+            db.query(TrackingPoint)
+            .filter(TrackingPoint.session_id == session_id)
+            .order_by(TrackingPoint.timestamp.asc())
+            .all()
+        )
+        
+        zones = (
+            db.query(ZoneEvent)
+            .filter(ZoneEvent.session_id == session_id)
+            .order_by(ZoneEvent.entry_time.asc())
+            .all()
+        )
+
+        path_data = [
+            {"x": p.x_coordinate, "y": p.y_coordinate, "timestamp": p.timestamp}
+            for p in points
+        ]
+        
+        zone_data = [
+            {
+                "zone_id": z.zone_id,
+                "entry_time": z.entry_time,
+                "exit_time": z.exit_time,
+                "duration": z.duration
+            }
+            for z in zones
+        ]
+
+        return {
+            "session_id": session_id,
+            "path": path_data,
+            "zones": zone_data
+        }
+

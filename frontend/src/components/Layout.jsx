@@ -28,6 +28,8 @@ function Layout({ children }) {
     { path: "/shelves", label: "🗄️ Shelves" },
     { path: "/cameras", label: "🎥 Cameras" },
     { path: "/products", label: "📦 Products" },
+    { path: "/behavior", label: "🧠 Behavior" },
+    { path: "/analytics/products", label: "⭐ Product Scores" },
   ];
 
   return (

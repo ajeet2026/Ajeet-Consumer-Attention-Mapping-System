@@ -41,6 +41,8 @@ def generate_frames_cv2(camera_id: int, camera_name: str, video_path: str = None
     from app.ai.attention import AttentionDetector
     from app.services.tracking_service import TrackingService
     from app.services.attention_service import AttentionService
+    from app.services.shelf_analytics_service import ShelfAnalyticsService
+    from app.ai.shelf_detector import ShelfProductDetector
     from app.models.shelf import Shelf
 
     reader = VideoFrameReader(video_path)
@@ -48,6 +50,7 @@ def generate_frames_cv2(camera_id: int, camera_name: str, video_path: str = None
     tracker = ShopperTracker()
     gaze_estimator = GazeEstimator()
     attention_detector = AttentionDetector()
+    shelf_detector = ShelfProductDetector()
 
     db = SessionLocal()
     shelves = db.query(Shelf).all()
@@ -55,6 +58,7 @@ def generate_frames_cv2(camera_id: int, camera_name: str, video_path: str = None
 
     width, height = 640, 480
     frame_count = 0
+    total_frames_processed = 0
     start_time = time.time()
     fps = 10.0
 
@@ -122,7 +126,7 @@ def generate_frames_cv2(camera_id: int, camera_name: str, video_path: str = None
                     db, sess_id, float(cx), float(cy), now
                 )
 
-                gaze_data = gaze_estimator.estimate_gaze(frame, bbox)
+                gaze_data = gaze_estimator.estimate_gaze(frame, bbox, tracker_id=trk_id)
                 gaze_vector = gaze_data["gaze_vector"]
 
                 looked_shelf_id = attention_detector.detect_attention(
@@ -179,11 +183,19 @@ def generate_frames_cv2(camera_id: int, camera_name: str, video_path: str = None
 
             # Draw standard overlays
             frame_count += 1
+            total_frames_processed += 1
             elapsed = time.time() - start_time
             if elapsed > 1.0:
                 fps = frame_count / elapsed
                 frame_count = 0
                 start_time = time.time()
+
+            # Run periodic shelf scan every 150 frames
+            if total_frames_processed % 150 == 0 and shelf_detector.model:
+                for shelf in shelves:
+                    shelf_bbox = ShelfAnalyticsService.get_shelf_bbox(shelf)
+                    metrics = shelf_detector.get_shelf_metrics(frame, shelf_bbox)
+                    ShelfAnalyticsService.save_snapshot(db, shelf.id, metrics)
 
             cv2.putText(
                 frame,
@@ -292,7 +304,7 @@ def generate_frames_pil(camera_id: int, camera_name: str, video_path: str = None
                     db, sess_id, float(cx), float(cy), now
                 )
 
-                gaze_data = gaze_estimator.estimate_gaze(None, bbox)
+                gaze_data = gaze_estimator.estimate_gaze(None, bbox, tracker_id=trk_id)
                 gaze_vector = gaze_data["gaze_vector"]
 
                 looked_shelf_id = attention_detector.detect_attention(

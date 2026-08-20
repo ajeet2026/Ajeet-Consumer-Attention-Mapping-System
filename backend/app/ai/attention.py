@@ -3,8 +3,8 @@ class AttentionDetector:
         # Mapped 2D bounding boxes in camera view for configured shelves
         # format: shelf_id -> [x1, y1, x2, y2]
         self.shelf_regions = {
-            1: [40, 60, 240, 280],  # Beverages (left)
-            2: [380, 60, 580, 280],  # Snacks (right)
+            1: [0, 0, 320, 480],  # Left half of the screen
+            2: [320, 0, 640, 480],  # Right half of the screen
         }
 
     def detect_attention(self, shopper_centroid, gaze_vector, active_shelves=None):
@@ -26,9 +26,9 @@ class AttentionDetector:
             for idx, shelf in enumerate(active_shelves):
                 # Distribute regions dynamically
                 if idx % 2 == 0:
-                    regions[shelf.id] = [40, 60, 240, 280]
+                    regions[shelf.id] = [0, 0, 320, 480]  # Left side
                 else:
-                    regions[shelf.id] = [380, 60, 580, 280]
+                    regions[shelf.id] = [320, 0, 640, 480]  # Right side
 
         # Run 2D Ray-Box intersection algorithm (Slab Method)
         for shelf_id, box in regions.items():

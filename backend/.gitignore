@@ -13,3 +13,8 @@ __pycache__/
 
 # Environment variables
 .env
+# Media Uploads
+uploads/
+
+# Large Models
+*.pt

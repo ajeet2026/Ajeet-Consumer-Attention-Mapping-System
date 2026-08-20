@@ -16,6 +16,12 @@ class Shelf(Base):
         ForeignKey("stores.id")
     )
 
+    # Camera-view bounding box for this shelf (pixel coordinates)
+    bbox_x1 = Column(Integer, nullable=True)
+    bbox_y1 = Column(Integer, nullable=True)
+    bbox_x2 = Column(Integer, nullable=True)
+    bbox_y2 = Column(Integer, nullable=True)
+
     store = relationship(
         "Store",
         back_populates="shelves"
@@ -23,6 +29,12 @@ class Shelf(Base):
 
     products = relationship(
         "Product",
+        back_populates="shelf",
+        cascade="all, delete"
+    )
+
+    snapshots = relationship(
+        "ShelfSnapshot",
         back_populates="shelf",
         cascade="all, delete"
     )

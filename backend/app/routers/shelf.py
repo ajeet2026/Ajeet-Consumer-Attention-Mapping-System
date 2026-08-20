@@ -22,6 +22,10 @@ def create_shelf(
     new_shelf = Shelf(
         name=shelf.name,
         store_id=shelf.store_id,
+        bbox_x1=shelf.bbox_x1,
+        bbox_y1=shelf.bbox_y1,
+        bbox_x2=shelf.bbox_x2,
+        bbox_y2=shelf.bbox_y2,
     )
     db.add(new_shelf)
     db.commit()
@@ -62,6 +66,10 @@ def update_shelf(
 
     shelf.name = data.name
     shelf.store_id = data.store_id
+    shelf.bbox_x1 = data.bbox_x1
+    shelf.bbox_y1 = data.bbox_y1
+    shelf.bbox_x2 = data.bbox_x2
+    shelf.bbox_y2 = data.bbox_y2
     db.commit()
     db.refresh(shelf)
     return shelf

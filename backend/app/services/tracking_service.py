@@ -47,6 +47,17 @@ class TrackingService:
 
             db.commit()
             db.refresh(session)
+            
+            # Milestone 3 Integration: Trigger Behavior Engine on session end
+            try:
+                from app.services.behavior_service import BehaviorService
+                BehaviorService.analyze_completed_session(db, session.id)
+                print(f"✅ Behavior profile created for session {session_id}")
+            except Exception as e:
+                import traceback
+                print(f"❌ Failed to analyze behavior for session {session_id}: {e}")
+                traceback.print_exc()
+
         return session
 
     @staticmethod

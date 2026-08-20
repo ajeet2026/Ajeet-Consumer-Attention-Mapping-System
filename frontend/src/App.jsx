@@ -10,6 +10,8 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import GoogleCallback from "./pages/GoogleCallback";
+import BehaviorAnalytics from "./components/BehaviorAnalytics";
+import ProductAnalytics from "./components/ProductAnalytics";
 
 function App() {
   return (
@@ -57,6 +59,22 @@ function App() {
           element={
             <Layout>
               <Cameras />
+            </Layout>
+          } 
+        />
+        <Route 
+          path="/behavior" 
+          element={
+            <Layout>
+              <BehaviorAnalytics />
+            </Layout>
+          } 
+        />
+        <Route 
+          path="/analytics/products" 
+          element={
+            <Layout>
+              <ProductAnalytics />
             </Layout>
           } 
         />

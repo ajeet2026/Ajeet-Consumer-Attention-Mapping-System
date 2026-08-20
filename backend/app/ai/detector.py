@@ -83,31 +83,6 @@ class ShopperDetector:
             except Exception as e:
                 print(f"YOLO detection error: {e}")
 
-        # High-Fidelity Simulation Mode
-        t = time.time()
-        detections = []
+        # No model available or detection failed — return empty (no faking)
+        return []
 
-        # Person 1 (walking across from left to right)
-        x = int(100 + (t * 15) % 440)
-        y = int(220 + np.sin(t * 1.5) * 15)
-        detections.append(
-            {
-                "bbox": [x - 20, y - 60, x + 20, y + 60],
-                "confidence": 0.95,
-                "class_id": 0,
-            }
-        )
-
-        # Person 2 (lingering near middle/right)
-        if int(t // 12) % 2 == 0:
-            x2 = int(350 + np.cos(t * 0.8) * 15)
-            y2 = int(260 + np.sin(t * 0.5) * 8)
-            detections.append(
-                {
-                    "bbox": [x2 - 20, y2 - 60, x2 + 20, y2 + 60],
-                    "confidence": 0.89,
-                    "class_id": 0,
-                }
-            )
-
-        return detections

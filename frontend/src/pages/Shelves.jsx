@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { parseJwt } from "../components/ProtectedRoute";
 import HeatmapCanvas from "../components/HeatmapCanvas";
+import ShelfAnalytics from "../components/ShelfAnalytics";
 
 function Shelves() {
   const [shelves, setShelves] = useState([]);
@@ -133,6 +134,8 @@ function Shelves() {
   return (
     <div className="shelves-container" style={{ color: "#f8fafc" }}>
       {error && <div className="error-alert">{error}</div>}
+
+      <ShelfAnalytics />
 
       {/* --- VISUAL PLANOGRAM HEATMAP VIEW --- */}
       <h2 style={{ fontSize: "1.4rem", margin: "10px 0 10px 0", color: "#38bdf8" }}>
