@@ -7,3 +7,4 @@ frontend/node_modules/
 **/.DS_Store
 generate_pptx.py
 *.pptx
+build_presentation.py
