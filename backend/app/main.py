@@ -45,6 +45,7 @@ def init_default_data():
                 role="Admin",
             )
             db.add(admin)
+            print("Seeded Admin: admin@retaileye.ai")
         if not db.query(User).filter(User.email == "manager@retaileye.ai").first():
             manager = User(
                 name="Store Manager",
@@ -53,6 +54,24 @@ def init_default_data():
                 role="Store Manager",
             )
             db.add(manager)
+            print("Seeded Manager: manager@retaileye.ai")
+        
+        # Seed default store if none exists
+        if db.query(Store).count() == 0:
+            st = Store(name="RetailEye Flagship Store", location="New York, NY", manager_name="John Doe")
+            db.add(st)
+            db.flush()
+            sh = Shelf(name="Beverages Section A1", store_id=st.id)
+            db.add(sh)
+            db.flush()
+            cam = Camera(name="Ceiling Cam 1", ip_address="192.168.1.101", store_id=st.id)
+            db.add(cam)
+            p1 = Product(name="Organic Green Tea", category="Beverages", price=4.99, shelf_id=sh.id)
+            p2 = Product(name="Cold Brew Coffee", category="Beverages", price=5.49, shelf_id=sh.id)
+            db.add(p1)
+            db.add(p2)
+            print("Seeded initial store, shelf, camera, and products")
+
         db.commit()
         db.close()
     except Exception as e:

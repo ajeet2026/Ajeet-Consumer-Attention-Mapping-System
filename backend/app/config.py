@@ -17,4 +17,9 @@ GOOGLE_REDIRECT_URI = os.getenv(
 DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql+psycopg2://localhost/consumer_attention"
 )
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+elif DATABASE_URL.startswith("postgresql://") and not DATABASE_URL.startswith("postgresql+psycopg2://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+
 SECRET_KEY = os.getenv("SECRET_KEY", "consumer_attention_secret_key")

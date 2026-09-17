@@ -5,48 +5,88 @@ import api from "../api/axios";
 function Login() {
     const navigate = useNavigate();
 
+    const [isRegister, setIsRegister] = useState(false);
+    const [name, setName] = useState("");
+    const [role, setRole] = useState("Store Manager");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [successMsg, setSuccessMsg] = useState("");
 
-    const handleLogin = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         setLoading(true);
         setError("");
+        setSuccessMsg("");
 
-        try {
-            const response = await api.post(
-                "/auth/login",
-                new URLSearchParams({
-                    username: email,
-                    password: password,
-                }),
-                {
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                }
-            );
+        if (isRegister) {
+            try {
+                await api.post("/auth/register", {
+                    name,
+                    email,
+                    password,
+                    role,
+                });
+                setSuccessMsg("Account created! Logging in...");
 
-            // Save JWT Token
-            localStorage.setItem(
-                "token",
-                response.data.access_token
-            );
+                const response = await api.post(
+                    "/auth/login",
+                    new URLSearchParams({
+                        username: email,
+                        password: password,
+                    }),
+                    {
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                    }
+                );
 
-            // Redirect to Dashboard
-            navigate("/dashboard");
+                localStorage.setItem("token", response.data.access_token);
+                navigate("/dashboard");
+            } catch (err) {
+                setError(
+                    err.response?.data?.detail ||
+                    "Registration failed. Try again."
+                );
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            try {
+                const response = await api.post(
+                    "/auth/login",
+                    new URLSearchParams({
+                        username: email,
+                        password: password,
+                    }),
+                    {
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                    }
+                );
 
-        } catch (err) {
-            setError(
-                err.response?.data?.detail ||
-                "Invalid Email or Password"
-            );
-        } finally {
-            setLoading(false);
+                // Save JWT Token
+                localStorage.setItem(
+                    "token",
+                    response.data.access_token
+                );
+
+                // Redirect to Dashboard
+                navigate("/dashboard");
+
+            } catch (err) {
+                setError(
+                    err.response?.data?.detail ||
+                    "Invalid Email or Password"
+                );
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -68,12 +108,45 @@ function Login() {
 
             <form
                 className="login-card"
-                onSubmit={handleLogin}
+                onSubmit={handleSubmit}
             >
 
                 <h1>Consumer Attention Mapping System</h1>
 
-                <p>AI Powered Retail Analytics Dashboard</p>
+                <p>{isRegister ? "Create a New Account" : "AI Powered Retail Analytics Dashboard"}</p>
+
+                {isRegister && (
+                    <>
+                        <label>Full Name</label>
+                        <input
+                            type="text"
+                            placeholder="Enter your name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                        />
+
+                        <label>Role</label>
+                        <select
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                marginBottom: "12px",
+                                borderRadius: "6px",
+                                background: "#1e293b",
+                                color: "#fff",
+                                border: "1px solid #334155"
+                            }}
+                        >
+                            <option value="Store Manager">Store Manager</option>
+                            <option value="Retail Analyst">Retail Analyst</option>
+                            <option value="Marketing Director">Marketing Director</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </>
+                )}
 
                 <label>Email Address</label>
 
@@ -95,23 +168,49 @@ function Login() {
                     required
                 />
 
-                <div className="remember">
-                    <input type="checkbox" />
-                    <span>Remember Me</span>
-                </div>
+                {!isRegister && (
+                    <div className="remember">
+                        <input type="checkbox" />
+                        <span>Remember Me</span>
+                    </div>
+                )}
 
                 {error && (
-                    <p className="error">
+                    <p className="error" style={{ color: "#ef4444", marginTop: "8px" }}>
                         {error}
+                    </p>
+                )}
+
+                {successMsg && (
+                    <p style={{ color: "#22c55e", marginTop: "8px" }}>
+                        {successMsg}
                     </p>
                 )}
 
                 <button
                     type="submit"
                     disabled={loading}
+                    style={{ marginTop: "10px" }}
                 >
-                    {loading ? "Logging In..." : "Login"}
+                    {loading ? (isRegister ? "Creating Account..." : "Logging In...") : (isRegister ? "Register & Login" : "Login")}
                 </button>
+
+                <p 
+                    style={{ 
+                        textAlign: "center", 
+                        marginTop: "16px", 
+                        cursor: "pointer", 
+                        color: "#38bdf8",
+                        fontSize: "0.9rem" 
+                    }}
+                    onClick={() => {
+                        setIsRegister(!isRegister);
+                        setError("");
+                        setSuccessMsg("");
+                    }}
+                >
+                    {isRegister ? "Already have an account? Log In" : "Don't have an account? Register here"}
+                </p>
 
                 <div className="divider">
                     <span>or</span>
