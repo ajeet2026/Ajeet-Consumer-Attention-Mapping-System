@@ -544,8 +544,9 @@ def upload_camera_video(
             status_code=400, detail="Only video files (.mp4, .avi, .mov, .mkv) are allowed"
         )
 
-    # ensure uploads directory exists
-    uploads_dir = "/Users/ajeetkumar/Desktop/project/ConsumerAttentionMapping/backend/uploads"
+    # ensure uploads directory exists (works on both local Mac and Render cloud)
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    uploads_dir = os.path.join(BASE_DIR, "uploads")
     os.makedirs(uploads_dir, exist_ok=True)
 
     # Save the file locally
