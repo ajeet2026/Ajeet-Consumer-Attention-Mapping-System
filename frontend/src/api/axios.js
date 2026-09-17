@@ -1,7 +1,11 @@
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_API_URL 
+    ? (import.meta.env.VITE_API_URL.endsWith('/') ? import.meta.env.VITE_API_URL.slice(0, -1) : import.meta.env.VITE_API_URL)
+    : "http://127.0.0.1:8000";
+
 const api = axios.create({
-    baseURL: "http://127.0.0.1:8000",
+    baseURL: baseURL,
 });
 
 // Flag to prevent multiple redirects
