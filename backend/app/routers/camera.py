@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.database.database import get_db
 from app.models.camera import Camera
+from app.models.store import Store
 from app.schemas.camera_schema import (
     CameraCreate,
     CameraUpdate,
@@ -559,11 +560,19 @@ def upload_camera_video(
             status_code=500, detail=f"Failed to save video: {str(e)}"
         )
 
-    # Register as a Virtual Camera (defaulting to store 1)
+    # Find an existing store or create a default one to satisfy ForeignKey
+    store = db.query(Store).first()
+    if not store:
+        store = Store(name="Main Store", location="Retail Floor", manager_name="Manager")
+        db.add(store)
+        db.commit()
+        db.refresh(store)
+
+    # Register as a Virtual Camera assigned to the available store
     new_camera = Camera(
         name=f"Video: {file.filename}",
         ip_address=file_path,
-        store_id=1,
+        store_id=store.id,
     )
     db.add(new_camera)
     db.commit()
