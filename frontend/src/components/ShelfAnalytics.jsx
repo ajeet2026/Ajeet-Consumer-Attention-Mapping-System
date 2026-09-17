@@ -65,7 +65,7 @@ function ShelfAnalytics() {
         ) : (
           shelfSummary.map((shelf) => {
             const snap = shelf.latest_snapshot;
-            const imageUrl = snap?.snapshot_path ? `http://127.0.0.1:8000/${snap.snapshot_path}` : null;
+            const imageUrl = snap?.snapshot_path ? `${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/${snap.snapshot_path}` : null;
 
             return (
               <div key={shelf.shelf_id} style={{

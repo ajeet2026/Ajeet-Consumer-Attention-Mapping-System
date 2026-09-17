@@ -92,7 +92,7 @@ function Login() {
 
     const handleGoogleLogin = () => {
         const clientId = "239269367990-g1tksjreouhujr0ur907tqu402to8l8i.apps.googleusercontent.com";
-        const redirectUri = "http://localhost:5173/auth/callback";
+        const redirectUri = window.location.origin + "/auth/callback";
         const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
             `client_id=${clientId}&` +
             `redirect_uri=${encodeURIComponent(redirectUri)}&` +

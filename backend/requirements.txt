@@ -15,3 +15,5 @@ numpy
 filterpy
 lapx
 email-validator
+httpx
+

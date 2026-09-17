@@ -297,7 +297,7 @@ function Cameras() {
               </div>
               <div className="video-frame" style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", background: "#020617", height: "450px" }}>
                 <img 
-                  src={`http://127.0.0.1:8000/cameras/${selectedCamera.id}/feed?token=${token}`} 
+                  src={`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/cameras/${selectedCamera.id}/feed?token=${token}`} 
                   alt={`Simulated stream for ${selectedCamera.name}`} 
                   className="live-stream-image"
                   style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: "4px" }}
